@@ -1,0 +1,150 @@
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{tikz}
+\usepackage{biblatex}
+\usepackage{csquotes}
+
+\addbibresource{references.bib}
+\nocite{*}
+
+\title{Otras implementaciones de la DFT}
+\author{Alejandro Domínguez Muñoz}
+\institute{Universidad de Sevilla}
+\date{Noviembre de 2022}
+
+\begin{document}
+
+\frame{\titlepage}
+
+\frame{\tableofcontents}
+
+\section{Introducción}
+
+\begin{frame}{Recordatorio}
+\begin{gather*}
+\mathbb{R}^{(N : \mathbb{N})} \equiv (N : \mathbb{N}) \rightarrow N \rightarrow \mathbb{R} \\
+x : \mathbb{R}^{(N : \mathbb{N})} \\
+k : \mathbb{N} \\
+k \in [0, N - 1] \\
+W_N = e^{-j2\pi/N} \\
+X(k) = \sum_{n = 0}^{N - 1} x(n) W_N^{kn}
+\end{gather*}
+\end{frame}
+
+\section{Divide y vencerás}
+
+\begin{frame}{Subdivisión de la DFT}
+\begin{itemize}
+\item $N = L \cdot M$ (rellenar con 0s si no cuadra)
+\item Representar como $\mathbb{R}^{(N : \mathbb{N})}$ o $\mathbb{R}^{(L \times M : \mathbb{N} \times \mathbb{N})}$
+\item Siguiendo las correspondencias entre índices:
+
+\begin{align*}
+\only<1>{
+X(p, q) &= \sum_{m = 0}^{M - 1} \sum_{l = 0}^{L - 1} x'(l, m) W_N^{(Mp + q)(mL + l)} \\
+X(p, q) &= \sum_{l = 0}^{L - 1} W_N^{lq} \left[\sum_{m = 0}^{M - 1} x'(l, m) W_M^{mq}\right] W_L^{lp} \\
+X(p, q) &= \sum_{l = 0}^{L - 1} W_N^{lq} \left[\sum_{m = 0}^{M - 1} x(Ml + m) W_M^{mq}\right] W_L^{lp}
+}
+\only<2>{
+X(p, q) &= \sum_{m = 0}^{M - 1} \sum_{l = 0}^{L - 1} x'(l, m) W_N^{mp} W_L^{lp} W_M^{mq} \\
+X(p, q) &= \sum_{m = 0}^{M - 1} W_M^{mq} \left[\sum_{l = 0}^{L - 1} x'(l, m) W_M^{lp}\right] W_L^{mp} \\
+X(p, q) &= \sum_{m = 0}^{M - 1} W_M^{mq} \left[\sum_{l = 0}^{L - 1} x(l + mL) W_M^{lp}\right] W_L^{mp}
+}
+\end{align*}
+
+\end{itemize}
+\end{frame}
+
+\section{Número de muestras de base 2}
+
+\begin{frame}{$N = 2^k$: Diezmado temporal}
+\begin{equation*}
+\begin{split}
+\only<1>{
+X(k) &= \sum_{n = 0}^{N - 1} x(n) W_N^{kn} \\
+     &= \sum_{n = 0}^{(N/2) - 1} x(2n) W_N^{2nk}
+        + \sum_{n = 0}^{(N/2) - 1} x(2n + 1) W_N^{k(2n + 1)} \\
+     &= \sum_{n = 0}^{(N/2) - 1} x(2n) W_{N/2}^{kn}
+        + W_{N}^{k} \sum_{n = 0}^{(N/2) - 1} x(2n + 1) W_{N/2}^{kn}
+}
+\only<2>{
+X(k') &= \sum_{n = 0}^{(N/2) - 1} x(2n) W_{N/2}^{k'n}
+         + W_{N}^{k'} \sum_{n = 0}^{(N/2) - 1} x(2n + 1) W_{N/2}^{k'n} \\
+X(k' + \frac{N}{2}) &= \sum_{n = 0}^{(N/2) - 1} x(2n) W_{N/2}^{k'n}
+                       - W_{N}^{k'} \sum_{n = 0}^{(N/2) - 1} x(2n + 1) W_{N/2}^{k'n}
+}
+\end{split}
+\end{equation*}
+\end{frame}
+
+\begin{frame}{$N = 2^k$: Diezmado de frecuencia}
+\begin{equation*}
+\begin{split}
+\only<1>{
+X(k) &= \sum_{n = 0}^{N - 1} x(n) W_N^{kn} \\
+     &= \sum_{n = 0}^{(N/2) - 1} x(n) W_N^{kn}
+        + \sum_{n = N/2}^{N - 1} x(n + \frac{N}{2}) W_N^{kn} \\
+     &= \sum_{n = 0}^{(N/2) - 1} x(n) W_N^{kn}
+        + W_N^{kN/2} \sum_{n = 0}^{(N/2) - 1} x(n + \frac{N}{2}) W_N^{kn} \\
+     &= \sum_{n = 0}^{(N/2) - 1} \left[ x(n) + (-1)^k x(n + \frac{N}{2}) \right] W_N^{kn}
+}
+\only<2>{
+X(2k') &= \sum_{n = 0}^{(N/2) - 1} \left[ x(n) + x(n + \frac{N}{2}) \right] W_{N/2}^{k'n} \\
+X(2k' + 1) &= \sum_{n = 0}^{(N/2) - 1} \left[ x(n) + x(n + \frac{N}{2}) \right] W_{N}^{n} W_{N/2}^{k'n}
+}
+\end{split}
+\end{equation*}
+\end{frame}
+
+\section{Número de muestras de base 4}
+
+\begin{frame}{$N = 4^k$: Diezmado temporal}
+Aplicamos la expresión obtenida para el algoritmo divide y vencerás,
+con $L = 4$ (y por lo tanto $M = \frac{N}{4}$):
+
+\begin{align*}
+X(q + \frac{N}{4}p) &= \sum_{l = 0}^3 W_N^{lq} \left[\sum_{m = 0}^{(N/4) - 1} x(4m + l) W_{N/4}^{mq}\right] W_4^{lp} \\
+\end{align*}
+\end{frame}
+
+\begin{frame}{$N = 4^k$: Diezmado de frecuencia}
+Aplicamos la expresión obtenida para el algoritmo divide y vencerás,
+con $M = 4$ (y por lo tanto $L = \frac{N}{4}$):
+
+\begin{align*}
+X(4p + q) &= \sum_{l = 0}^{(N/4) - 1} W_{N}^{lq} \left[\sum_{m = 0}^3 x(4m + l) W_{4}^{mq}\right] W_{N/4}^{lp} \\
+\end{align*}
+\end{frame}
+
+\section{Número de muestras de base dividida}
+
+\begin{frame}{$N = 2^k$: Split-radix}
+\only<1>{
+\begin{itemize}
+\item Algoritmo de diezmado \textbf{en frecuencia}.
+\item Para muestras pares, $X(2k')$.
+\item Para muestras impares, $X(4k'' + 1)$ y $X(4k'' + 3)$.
+\end{itemize}
+}
+\only<2>{
+\begin{equation*}
+X(2k') = \sum_{n = 0}^{(N/2) - 1} \left[ x(n) + x(n + \frac{N}{2}) \right] W_{N/2}^{k'n}
+\end{equation*}
+\begin{multline*}
+X(4k'' + 1) = \sum_{n = 0}^{(N/4) - 1} \left[ x(n) - x(n + \frac{N}{2}) \right] \\
+              - j \left[ x(n + \frac{N}{4}) - x(n + \frac{3N}{4}) \right] W_{N}^{n} W_{N/4}^{k''n}
+\end{multline*}
+\begin{multline*}
+X(4k'' + 3) = \sum_{n = 0}^{(N/4) - 1} \left[ x(n) - x(n + \frac{N}{2}) \right] \\
+              + j \left[ x(n + \frac{N}{4}) - x(n + \frac{3N}{4}) \right] W_{N}^{3n} W_{N/4}^{k''n}
+\end{multline*}
+}
+\end{frame}
+
+\begin{frame}{Bibliografía}
+\printbibliography
+\end{frame}
+
+
+\end{document}
